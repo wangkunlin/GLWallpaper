@@ -105,21 +105,29 @@ public class GLUtil {
         return buffer;
     }
 
+    public static FloatBuffer makeFloatBuffer(float[] arr) {
+        FloatBuffer buffer = ByteBuffer.allocateDirect(arr.length * 4)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+        buffer.put(arr);
+        buffer.position(0);
+        return buffer;
+    }
+
     public static final int FLOAT_SIZE_BYTES = 4;
 
-
-    public static FloatBuffer createMesh(int left, int top, float right, float bottom) {
-        final float[] verticesData = {
-                // X, Y, Z, U, V
-                left, bottom, 0.0f, 0.0f, 1.0f,
-                right, bottom, 0.0f, 1.0f, 1.0f,
-                left, top, 0.0f, 0.0f, 0.0f,
-                right, top, 0.0f, 1.0f, 0.0f,
-        };
-
-        final FloatBuffer triangleVertices = makeFloatBuffer(verticesData.length);
-        triangleVertices.put(verticesData)
-                .position(0);
-        return triangleVertices;
-    }
+//    public static FloatBuffer createMesh(int left, int top, float right, float bottom) {
+//        final float[] verticesData = {
+//                // X, Y, Z, U, V
+//                left, bottom, 0.0f, 0.0f, 1.0f,
+//                right, bottom, 0.0f, 1.0f, 1.0f,
+//                left, top, 0.0f, 0.0f, 0.0f,
+//                right, top, 0.0f, 1.0f, 0.0f,
+//        };
+//
+//        final FloatBuffer triangleVertices = makeFloatBuffer(verticesData.length);
+//        triangleVertices.put(verticesData)
+//                .position(0);
+//        return triangleVertices;
+//    }
 }

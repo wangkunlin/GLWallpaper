@@ -131,7 +131,7 @@ public class DrawBitmapUtil {
                     fArr2[3] = min;
                     fArr2[0] = min;
                     float[] fArr3 = a;
-                    float min2 = Math.min((((((float) (i2 + 1)) * 2.0f) * ((float) mMaxTextureSize)) / ((float) mImageHeight)) - 4.0f, 1.0f);
+                    float min2 = Math.min((i2 + 1) * 2.0f * mMaxTextureSize / mImageHeight - 4.0f, 1.0f);
                     fArr3[16] = min2;
                     fArr3[10] = min2;
                     fArr3[c2] = min2;

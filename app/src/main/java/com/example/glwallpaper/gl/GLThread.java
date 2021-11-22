@@ -79,7 +79,7 @@ class GLThread extends Thread {
         mGLWrapper = glWrapper;
     }
 
-    public void setEnableLog(boolean enableLog) {
+    public static void setEnableLog(boolean enableLog) {
         mEnableLog = enableLog;
         EglHelper.mEnableLog = enableLog;
     }

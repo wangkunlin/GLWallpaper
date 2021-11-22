@@ -1,6 +1,7 @@
 package com.example.glwallpaper.gl;
 
 import android.service.wallpaper.WallpaperService;
+import android.util.Log;
 import android.view.SurfaceHolder;
 
 import androidx.annotation.IntDef;
@@ -9,6 +10,8 @@ import androidx.annotation.IntDef;
  * On 2021-11-19
  */
 public abstract class GLWallpaperService extends WallpaperService {
+
+    private static final String TAG = "GLWallpaperService";
 
     public static final int RENDERMODE_WHEN_DIRTY = 0;
     public static final int RENDERMODE_CONTINUOUSLY = 1;
@@ -26,12 +29,18 @@ public abstract class GLWallpaperService extends WallpaperService {
         private EGLContextFactory mEGLContextFactory;
         private EGLWindowSurfaceFactory mEGLWindowSurfaceFactory;
         private GLWrapper mGLWrapper;
+        private boolean mEnableLog = false;
 
         private void checkRenderThreadState() {
             if (mGLThread != null) {
                 throw new IllegalStateException(
                         "setRenderer has already been called for this instance.");
             }
+        }
+
+        public void setEnableLog() {
+            mEnableLog = true;
+            GLThread.setEnableLog(true);
         }
 
         public void setEGLContextClientVersion(int version) {
@@ -95,11 +104,17 @@ public abstract class GLWallpaperService extends WallpaperService {
         @Override
         public void onCreate(SurfaceHolder surfaceHolder) {
             super.onCreate(surfaceHolder);
+            if (mEnableLog) {
+                Log.d(TAG, "engine onCreate");
+            }
         }
 
         @Override
         public void onSurfaceCreated(SurfaceHolder holder) {
             super.onSurfaceCreated(holder);
+            if (mEnableLog) {
+                Log.d(TAG, "engine onSurfaceCreated");
+            }
             if (mGLThread != null) {
                 mGLThread.surfaceCreated(holder);
             }
@@ -108,6 +123,9 @@ public abstract class GLWallpaperService extends WallpaperService {
         @Override
         public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
             super.onSurfaceChanged(holder, format, width, height);
+            if (mEnableLog) {
+                Log.d(TAG, "engine onSurfaceChanged");
+            }
             if (mGLThread != null) {
                 mGLThread.onWindowResize(width, height);
             }
@@ -116,12 +134,18 @@ public abstract class GLWallpaperService extends WallpaperService {
         @Override
         public void onSurfaceRedrawNeeded(SurfaceHolder holder) {
             super.onSurfaceRedrawNeeded(holder);
+            if (mEnableLog) {
+                Log.d(TAG, "engine onSurfaceRedrawNeeded");
+            }
             requestRender();
         }
 
         @Override
         public void onVisibilityChanged(boolean visible) {
             super.onVisibilityChanged(visible);
+            if (mEnableLog) {
+                Log.d(TAG, "engine onVisibilityChanged: " + visible);
+            }
             if (mGLThread == null) {
                 return;
             }
@@ -135,6 +159,9 @@ public abstract class GLWallpaperService extends WallpaperService {
         @Override
         public void onSurfaceDestroyed(SurfaceHolder holder) {
             super.onSurfaceDestroyed(holder);
+            if (mEnableLog) {
+                Log.d(TAG, "engine onSurfaceDestroyed");
+            }
             if (mGLThread != null) {
                 mGLThread.surfaceDestroyed();
             }
@@ -143,6 +170,9 @@ public abstract class GLWallpaperService extends WallpaperService {
         @Override
         public void onDestroy() {
             super.onDestroy();
+            if (mEnableLog) {
+                Log.d(TAG, "engine onDestroy");
+            }
             if (mGLThread != null) {
                 mGLThread.requestExitAndWait();
             }
