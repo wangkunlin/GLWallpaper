@@ -8,6 +8,7 @@ import androidx.annotation.IntDef;
 
 /**
  * On 2021-11-19
+ * 参考 GLSurfaceView 搞的 GLWallpaperService
  */
 public abstract class GLWallpaperService extends WallpaperService {
 

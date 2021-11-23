@@ -9,18 +9,16 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.preference.PreferenceManager;
-import android.text.TextUtils;
 import android.view.SurfaceHolder;
 
-import androidx.exifinterface.media.ExifInterface;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.example.glwallpaper.gl.GLBitmap;
 import com.example.glwallpaper.gl.GLWallpaperService;
 import com.example.glwallpaper.wallpapers.RotationMonitor;
+
+import java.util.Collections;
 
 /**
  * On 2021-11-19
@@ -61,70 +59,21 @@ public class ImageWallpaperService extends GLWallpaperService {
         private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                handleReceiverEvent();
+                handleImageChange();
             }
         };
-
-        private Bitmap loadBitmap() {
-            String path = mPreferences.getString(ACTION_SET_WALLPAPER, "");
-            if (TextUtils.isEmpty(path)) {
-                return null;
-            }
-
-            int degree = 0;
-            ExifInterface exif = null;
-            try {
-                exif = new ExifInterface(path);
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
-
-            if (exif != null) {
-                int orientation = exif.getAttributeInt(
-                        ExifInterface.TAG_ORIENTATION,
-                        ExifInterface.ORIENTATION_NORMAL);
-                switch (orientation) {
-                    case ExifInterface.ORIENTATION_ROTATE_90:
-                        degree = 90;
-                        break;
-
-                    case ExifInterface.ORIENTATION_ROTATE_180:
-                        degree = 180;
-                        break;
-
-                    case ExifInterface.ORIENTATION_ROTATE_270:
-                        degree = 270;
-                        break;
-                }
-            }
-
-            Bitmap bitmap = BitmapFactory.decodeFile(path);
-
-            if (degree != 0) {
-                Matrix matrix = new Matrix();
-                matrix.postRotate(degree);
-                Bitmap b = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
-                        bitmap.getHeight(), matrix, true);
-                bitmap.recycle();
-                bitmap = b;
-            }
-
-            return bitmap;
-        }
-
-        private void handleReceiverEvent() {
-            Bitmap bitmap = loadBitmap();
-            if (bitmap == null) {
-                return;
-            }
-            changeBitmap(bitmap);
-        }
 
         private ImageWallpaperRenderer mRenderer;
         private RotationMonitor mRotationMonitor;
 
-        private void changeBitmap(Bitmap bitmap) {
-            mRenderer.setBitmap(bitmap);
+        private String getImagePath() {
+            return mPreferences.getString(ACTION_SET_WALLPAPER, "");
+        }
+
+        private void handleImageChange() {
+            String path = getImagePath();
+            GLBitmap glBitmap = GLBitmap.create(path, 0.12f);
+            mRenderer.setImages(Collections.singletonList(glBitmap));
             requestRender();
         }
 
@@ -134,17 +83,13 @@ public class ImageWallpaperService extends GLWallpaperService {
             super.onCreate(surfaceHolder);
             setOffsetNotificationsEnabled(false);
 
-            Bitmap bitmap = loadBitmap();
-            if (bitmap == null) {
-                return;
-            }
             mRotationMonitor = new RotationMonitor(getApplicationContext(), 60, this);
 
             setEGLContextClientVersion(2);
 
             mRenderer = new ImageWallpaperRenderer();
             mRenderer.setDistance(25);
-            mRenderer.setBitmap(bitmap);
+            handleImageChange();
 
             setRenderer(mRenderer);
             setPreserveEGLContextOnPause(true);
@@ -157,6 +102,10 @@ public class ImageWallpaperService extends GLWallpaperService {
             IntentFilter filter = new IntentFilter(ACTION_SET_WALLPAPER);
 
             mBroadcastManager.registerReceiver(mReceiver, filter);
+        }
+
+        private void uninstallReceiver() {
+            mBroadcastManager.unregisterReceiver(mReceiver);
         }
 
         @Override
@@ -183,10 +132,6 @@ public class ImageWallpaperService extends GLWallpaperService {
                 mRenderer.angleChanged(angle[2], angle[1]);
             }
             requestRender();
-        }
-
-        private void uninstallReceiver() {
-            mBroadcastManager.unregisterReceiver(mReceiver);
         }
 
         @Override

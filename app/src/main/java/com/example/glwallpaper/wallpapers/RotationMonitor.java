@@ -40,11 +40,11 @@ public class RotationMonitor {
     private final RotationChangedListener mAngleListener;
     private final int mRate;
 
-    public RotationMonitor(Context context, int rate, RotationChangedListener listener) {
+    public RotationMonitor(Context context, int refreshRate, RotationChangedListener listener) {
         mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         mAngleListener = listener;
-        mRate = rate;
+        mRate = refreshRate;
     }
 
     public interface RotationChangedListener {

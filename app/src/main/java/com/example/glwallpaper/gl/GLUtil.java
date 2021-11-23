@@ -116,18 +116,4 @@ public class GLUtil {
 
     public static final int FLOAT_SIZE_BYTES = 4;
 
-//    public static FloatBuffer createMesh(int left, int top, float right, float bottom) {
-//        final float[] verticesData = {
-//                // X, Y, Z, U, V
-//                left, bottom, 0.0f, 0.0f, 1.0f,
-//                right, bottom, 0.0f, 1.0f, 1.0f,
-//                left, top, 0.0f, 0.0f, 0.0f,
-//                right, top, 0.0f, 1.0f, 0.0f,
-//        };
-//
-//        final FloatBuffer triangleVertices = makeFloatBuffer(verticesData.length);
-//        triangleVertices.put(verticesData)
-//                .position(0);
-//        return triangleVertices;
-//    }
 }
