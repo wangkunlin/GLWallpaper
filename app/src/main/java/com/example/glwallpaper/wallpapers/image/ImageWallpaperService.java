@@ -16,9 +16,9 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.example.glwallpaper.gl.GLBitmap;
 import com.example.glwallpaper.gl.GLWallpaperService;
-import com.example.glwallpaper.wallpapers.RotationMonitor;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * On 2021-11-19
@@ -29,9 +29,12 @@ public class ImageWallpaperService extends GLWallpaperService {
     private LocalBroadcastManager mBroadcastManager;
     private SharedPreferences mPreferences;
 
-    public static void setWallpaper(Context context, String path) {
+    public static void setWallpaper(Context context, ImageWallpaperMeta bean) {
+        if (bean.isInvalid()) {
+            return;
+        }
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-        preferences.edit().putString(ACTION_SET_WALLPAPER, path).apply();
+        preferences.edit().putString(ACTION_SET_WALLPAPER, bean.toJson()).apply();
 
         WallpaperManager manager = WallpaperManager.getInstance(context);
 
@@ -63,17 +66,44 @@ public class ImageWallpaperService extends GLWallpaperService {
             }
         };
 
-        private ImageWallpaperRenderer mRenderer;
+        private final ImageWallpaperRenderer mRenderer = new ImageWallpaperRenderer();
         private RotationMonitor mRotationMonitor;
 
-        private String getImagePath() {
-            return mPreferences.getString(ACTION_SET_WALLPAPER, "");
+        private ImageWallpaperMeta getWallpaperMeta() {
+            String json = mPreferences.getString(ACTION_SET_WALLPAPER, "");
+            return ImageWallpaperMeta.fromJson(json);
         }
 
         private void handleImageChange() {
-            String path = getImagePath();
-            GLBitmap glBitmap = GLBitmap.create(path, 0.12f);
-            mRenderer.setImages(Collections.singletonList(glBitmap));
+            ImageWallpaperMeta meta = getWallpaperMeta();
+            if (meta == null || meta.isInvalid()) {
+                return;
+            }
+            int distance = ImageWallpaperMeta.DEFAULT_MOVE_DISTANCE;
+            if (meta.moveDistance > 0) {
+                distance = meta.moveDistance;
+            }
+            mRenderer.setDistance(distance);
+
+            float extraScale = ImageWallpaperMeta.DEFAULT_EXTRA_SCALE;
+            if (meta.extraScale >= 0) {
+                extraScale = meta.extraScale;
+            }
+
+            List<GLBitmap> glBitmaps = new ArrayList<>();
+            List<Float> moveFactors = new ArrayList<>();
+
+            for (int i = 0; i < meta.images.size(); i++) {
+                float factor = meta.getMovieFactor(i);
+                moveFactors.add(factor);
+
+                String path = meta.images.get(i);
+                GLBitmap glBitmap = GLBitmap.create(path, extraScale);
+                glBitmaps.add(glBitmap);
+            }
+
+            mRenderer.setImages(glBitmaps);
+            mRenderer.setMoveFactors(moveFactors);
             requestRender();
         }
 
@@ -87,8 +117,6 @@ public class ImageWallpaperService extends GLWallpaperService {
 
             setEGLContextClientVersion(2);
 
-            mRenderer = new ImageWallpaperRenderer();
-            mRenderer.setDistance(25);
             handleImageChange();
 
             setRenderer(mRenderer);
@@ -123,9 +151,6 @@ public class ImageWallpaperService extends GLWallpaperService {
 
         @Override
         public void onRotationChanged(float[] angle) {
-            if (mRenderer == null) {
-                return;
-            }
             if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
                 mRenderer.angleChanged(angle[1], angle[2]);
             } else {
@@ -140,6 +165,7 @@ public class ImageWallpaperService extends GLWallpaperService {
             if (mRotationMonitor != null) {
                 mRotationMonitor.stop();
             }
+            mRenderer.release();
             super.onDestroy();
         }
     }

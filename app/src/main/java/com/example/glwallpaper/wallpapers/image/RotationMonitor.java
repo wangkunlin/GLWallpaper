@@ -1,4 +1,4 @@
-package com.example.glwallpaper.wallpapers;
+package com.example.glwallpaper.wallpapers.image;
 
 import android.content.Context;
 import android.hardware.Sensor;

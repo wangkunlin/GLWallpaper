@@ -614,7 +614,6 @@ class GLThread extends Thread {
                     Thread.currentThread().interrupt();
                 }
             }
-            mRenderer.onDestroy();
         }
     }
 }

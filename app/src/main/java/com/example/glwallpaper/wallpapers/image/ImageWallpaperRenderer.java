@@ -31,6 +31,7 @@ public class ImageWallpaperRenderer implements Renderer {
     private int mMoveFactorCount = 0;
 
     public ImageWallpaperRenderer() {
+        setDistance(ImageWallpaperMeta.DEFAULT_MOVE_DISTANCE);
     }
 
     public void setImages(List<GLBitmap> images) {
@@ -39,7 +40,7 @@ public class ImageWallpaperRenderer implements Renderer {
         mImageCount = mImages.size();
     }
 
-    public void setImageMoveFactors(List<Float> factors) {
+    public void setMoveFactors(List<Float> factors) {
         mMoveFactors.clear();
         mMoveFactors.addAll(factors);
         mMoveFactorCount = mMoveFactors.size();
@@ -99,7 +100,7 @@ public class ImageWallpaperRenderer implements Renderer {
     }
 
     @Override
-    public void onDestroy() {
+    public void release() {
         releaseImages();
         mMoveFactors.clear();
     }
