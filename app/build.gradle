@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.application'
+    id 'keystore-generator' // 自动生成随机 key store
 }
 
 android {

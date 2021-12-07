@@ -16,8 +16,6 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class ImageWallpaperRenderer implements Renderer {
 
-    private final Object mTranslateLock = new Object();
-
     private final List<GLBitmap> mImages = new ArrayList<>();
     private final List<Float> mMoveFactors = new ArrayList<>();
 
@@ -72,30 +70,26 @@ public class ImageWallpaperRenderer implements Renderer {
     }
 
     public void angleChanged(float x, float y) {
-        synchronized (mTranslateLock) { // 图片会抖动，猜测可能是，传感器的速率和 绘制速率不同导致，暂时加个锁
-            double xSin = Math.sin(x);
-            mTranslateX = (float) (xSin * mBaseMoveFactor);
+        double xSin = Math.sin(x);
+        mTranslateX = (float) (xSin * mBaseMoveFactor);
 
-            double ySin = Math.sin(y);
-            mTranslateY = (float) (ySin * mBaseMoveFactor);
-        }
+        double ySin = Math.sin(y);
+        mTranslateY = (float) (ySin * mBaseMoveFactor);
     }
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        synchronized (mTranslateLock) {
-            int N = mImageCount;
-            int factorN = mMoveFactorCount;
-            for (int i = 0; i < N; i++) {
-                GLBitmap image = mImages.get(i);
-                float factor = 1;
-                if (i < factorN) {
-                    factor = mMoveFactors.get(i);
-                }
-                float tx = mTranslateX / factor;
-                float ty = mTranslateY / factor;
-                image.draw(mSurfaceWidth, mSurfaceHeight, tx, ty);
+        int N = mImageCount;
+        int factorN = mMoveFactorCount;
+        for (int i = 0; i < N; i++) {
+            GLBitmap image = mImages.get(i);
+            float factor = 1;
+            if (i < factorN) {
+                factor = mMoveFactors.get(i);
             }
+            float tx = mTranslateX / factor;
+            float ty = mTranslateY / factor;
+            image.draw(mSurfaceWidth, mSurfaceHeight, tx, ty);
         }
     }
 
